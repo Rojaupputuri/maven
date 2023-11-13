@@ -1,57 +1,26 @@
-pipeline
+node('built-in') 
 {
-    agent any
-    stages
+    stage('ContinousDownload')
     {
-        stage('ContinuousDownload')
-        {
-            steps
-            {
-                git 'https://github.com/intelliqittrainings/maven.git'
-            }
-        }
-        stage('ContinuousBuild')
-        {
-            steps
-            {
-                sh 'mvn package'
-            }
-        }
-        stage('ContinuousDeployment')
-        {
-            steps
-            {
-               deploy adapters: [tomcat9(credentialsId: 'bfb67f1d-2f4e-430c-bb8d-30584116bd00', path: '', url: 'http://172.31.51.212:9090')], contextPath: 'test1', war: '**/*.war'
-            }
-        }
-        stage('ContinuousTesting')
-        {
-            steps
-            {
-               git 'https://github.com/intelliqittrainings/FunctionalTesting.git'
-               sh 'java -jar /home/ubuntu/.jenkins/workspace/DeclarativePipeline1/testing.jar'
-            }
-        }
-       
+    git 'https://github.com/Rojaupputuri/maven.git'
     }
-    
-    post
+    stage('ContinousBuild')
     {
-        success
-        {
-            input message: 'Need approval from the DM!', submitter: 'srinivas'
-               deploy adapters: [tomcat9(credentialsId: 'bfb67f1d-2f4e-430c-bb8d-30584116bd00', path: '', url: 'http://172.31.50.204:9090')], contextPath: 'prod1', war: '**/*.war'
-        }
-        failure
-        {
-            mail bcc: '', body: 'Continuous Integration has failed', cc: '', from: '', replyTo: '', subject: 'CI Failed', to: 'selenium.saikrishna@gmail.com'
-        }
-       
+        sh 'mvn package'
     }
-    
-    
-    
-    
-    
-    
+    stage('ContinousDeploye')
+    {
+        deploy adapters: [tomcat9(credentialsId: 'e68829be-48e3-4179-9687-6ef8c7fefb47', path: '', url: 'http://18.209.13.159:8080')], contextPath: 'testapp', war: '**/*.war'
+    }
+    stage('ContinousTesting')
+    {
+        git 'https://github.com/Rojaupputuri/FunctionalTesting.git'
+        sh 'java -jar /home/ubuntu/.jenkins/workspace/DeclarativePipeline1/testing.jar'
+
+    }
+    stage('ContinousDelivery')
+    {
+        input message: 'wait for respose', submitter: 'sai'
+        deploy adapters: [tomcat9(credentialsId: 'e68829be-48e3-4179-9687-6ef8c7fefb47', path: '', url: 'http://34.229.58.172:8080')], contextPath: 'proadapp', war: '**/*.war'
+    }
 }
